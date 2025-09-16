@@ -175,6 +175,7 @@
 
             // QR Code generation
             const generateQRCode = async (text) => {
+                console.log('generateQRCode called with text:', text);
                 if (!text.trim()) {
                     if (qrContainerRef.current) {
                         qrContainerRef.current.innerHTML = '';
@@ -184,15 +185,19 @@
 
                 try {
                     // Check if QRious library is loaded
+                    console.log('window.QRious available:', typeof window.QRious !== 'undefined');
                     if (typeof window.QRious !== 'undefined') {
+                        console.log('Using QRious library');
                         createQR(text);
                     } else {
+                        console.log('QRious not available, waiting and trying fallback');
                         // Wait a bit and try again, or fallback
                         setTimeout(() => {
                             if (typeof window.QRious !== 'undefined') {
+                                console.log('QRious now available after timeout');
                                 createQR(text);
                             } else {
-                                console.log('QRious not loaded, using fallback');
+                                console.log('QRious still not loaded, using fallback');
                                 generateFallbackQR(text);
                             }
                         }, 100);
@@ -204,7 +209,11 @@
             };
 
             const createQR = (text) => {
-                if (!qrContainerRef.current) return;
+                console.log('createQR called with text:', text);
+                if (!qrContainerRef.current) {
+                    console.log('qrContainerRef.current is null');
+                    return;
+                }
                 
                 try {
                     // Clear previous QR code
@@ -214,6 +223,7 @@
                     const canvas = document.createElement('canvas');
                     qrContainerRef.current.appendChild(canvas);
                     
+                    console.log('Creating QR with QRious...');
                     // Generate QR code
                     const qr = new window.QRious({
                         element: canvas,
@@ -229,6 +239,8 @@
                     canvas.style.maxWidth = '300px';
                     canvas.style.height = 'auto';
                     
+                    console.log('QR code created successfully');
+                    
                 } catch (error) {
                     console.error('Error creating QR code:', error);
                     generateFallbackQR(text);
@@ -236,7 +248,11 @@
             };
 
             const generateFallbackQR = (text) => {
-                if (!qrContainerRef.current) return;
+                console.log('generateFallbackQR called with text:', text);
+                if (!qrContainerRef.current) {
+                    console.log('qrContainerRef.current is null in fallback');
+                    return;
+                }
                 
                 // Clear previous content
                 qrContainerRef.current.innerHTML = '';
@@ -250,10 +266,17 @@
                 img.style.maxWidth = '300px';
                 img.style.height = 'auto';
                 
+                console.log('Using Google Charts fallback for QR code');
+                
                 // Add error handling for the fallback image
                 img.onerror = () => {
+                    console.log('Google Charts failed, trying QR Server API');
                     // If Google Charts also fails, try QR Server API
                     img.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedData}&format=png&margin=10`;
+                };
+                
+                img.onload = () => {
+                    console.log('Fallback QR code loaded successfully');
                 };
                 
                 qrContainerRef.current.appendChild(img);
@@ -301,6 +324,7 @@ END:VCARD`;
                         data = '';
                 }
                 
+                console.log('useEffect triggered - activeTab:', activeTab, 'data:', data);
                 setQrData(data);
                 generateQRCode(data);
             }, [activeTab, urlInput, textInput, contactInfo]);
@@ -523,9 +547,19 @@ END:VCARD`;
 
                                     React.createElement('button', {
                                         onClick: resetForm,
-                                        className: "w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
+                                        className: "w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium mb-2"
                                     },
                                         t('clearAllFields')
+                                    ),
+                                    
+                                    React.createElement('button', {
+                                        onClick: () => {
+                                            console.log('Test QR generation with sample text');
+                                            generateQRCode('https://example.com');
+                                        },
+                                        className: "w-full px-6 py-3 bg-blue-100 text-blue-700 rounded-xl hover:bg-blue-200 transition-all duration-200 font-medium"
+                                    },
+                                        "Test QR Generation"
                                     )
                                 ),
 
@@ -595,6 +629,9 @@ END:VCARD`;
             );
         };
 
+        // Test QRious library availability
+        console.log('QRious library check:', typeof window.QRious);
+        
         // Render the app
         ReactDOM.render(React.createElement(QRCodeGenerator), document.getElementById('root'));
     </script>
