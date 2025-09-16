@@ -1,5 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { QrCode, Link, MessageSquare, User, Download, Copy, Check } from 'lucide-react';
+
+// Simple icon components as fallback
+const createIcon = (name, className = "w-4 h-4") => {
+  const icons = {
+    QrCode: () => React.createElement('div', { className: `${className} bg-current rounded-sm`, style: { mask: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'%3E%3Crect x=\'3\' y=\'3\' width=\'5\' height=\'5\'/%3E%3Crect x=\'3\' y=\'16\' width=\'5\' height=\'5\'/%3E%3Crect x=\'16\' y=\'16\' width=\'5\' height=\'5\'/%3E%3Cpath d=\'m21 16-4 4\'/%3E%3Cpath d=\'m3 3h.01\'/%3E%3Cpath d=\'m12 3h.01\'/%3E%3Cpath d=\'m12 12h.01\'/%3E%3Cpath d=\'m16 16h.01\'/%3E%3Cpath d=\'m21 12v.01\'/%3E%3Cpath d=\'m12 12v.01\'/%3E%3C/svg%3E") no-repeat center' } }),
+    Link: () => React.createElement('div', { className: `${className} bg-current rounded-sm`, style: { mask: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'%3E%3Cpath d=\'m10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\'/%3E%3Cpath d=\'m14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\'/%3E%3C/svg%3E") no-repeat center' } }),
+    MessageSquare: () => React.createElement('div', { className: `${className} bg-current rounded-sm`, style: { mask: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'%3E%3Cpath d=\'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\'/%3E%3C/svg%3E") no-repeat center' } }),
+    User: () => React.createElement('div', { className: `${className} bg-current rounded-sm`, style: { mask: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'%3E%3Cpath d=\'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\'/%3E%3Ccircle cx=\'12\' cy=\'7\' r=\'4\'/%3E%3C/svg%3E") no-repeat center' } }),
+    Download: () => React.createElement('div', { className: `${className} bg-current rounded-sm`, style: { mask: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'%3E%3Cpath d=\'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\'/%3E%3Cpolyline points=\'7,10 12,15 17,10\'/%3E%3Cline x1=\'12\' y1=\'15\' x2=\'12\' y2=\'3\'/%3E%3C/svg%3E") no-repeat center' } }),
+    Copy: () => React.createElement('div', { className: `${className} bg-current rounded-sm`, style: { mask: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'%3E%3Crect x=\'9\' y=\'9\' width=\'13\' height=\'13\' rx=\'2\' ry=\'2\'/%3E%3Cpath d=\'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\'/%3E%3C/svg%3E") no-repeat center' } }),
+    Check: () => React.createElement('div', { className: `${className} bg-current rounded-sm`, style: { mask: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'%3E%3Cpolyline points=\'20,6 9,17 4,12\'/%3E%3C/svg%3E") no-repeat center' } })
+  };
+  return icons[name] || (() => React.createElement('div', { className }));
+};
+
+const QrCode = createIcon('QrCode');
+const Link = createIcon('Link');
+const MessageSquare = createIcon('MessageSquare');
+const User = createIcon('User');
+const Download = createIcon('Download');
+const Copy = createIcon('Copy');
+const Check = createIcon('Check');
 
 const TRANSLATIONS = {
   "en-US": {
@@ -117,20 +138,22 @@ const QRCodeGenerator = () => {
     }
 
     try {
-      // Load QRious library dynamically
-      if (!window.QRious) {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
-        script.onload = () => {
-          createQR(text);
-        };
-        document.head.appendChild(script);
-      } else {
+      // Check if QRious library is loaded
+      if (typeof window.QRious !== 'undefined') {
         createQR(text);
+      } else {
+        // Wait a bit and try again, or fallback
+        setTimeout(() => {
+          if (typeof window.QRious !== 'undefined') {
+            createQR(text);
+          } else {
+            console.log('QRious not loaded, using fallback');
+            generateFallbackQR(text);
+          }
+        }, 100);
       }
     } catch (error) {
-      console.error('Error loading QR library:', error);
-      // Fallback to Google Charts API
+      console.error('Error in QR generation:', error);
       generateFallbackQR(text);
     }
   };

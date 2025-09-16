@@ -19,8 +19,6 @@
     <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Lucide React Icons -->
-    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
     
     <style>
         body {
@@ -185,19 +183,22 @@
                 }
 
                 try {
-                    // Load QRious library if not already loaded
-                    if (!window.QRious) {
-                        const script = document.createElement('script');
-                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
-                        script.onload = () => {
-                            createQR(text);
-                        };
-                        document.head.appendChild(script);
-                    } else {
+                    // Check if QRious library is loaded
+                    if (typeof window.QRious !== 'undefined') {
                         createQR(text);
+                    } else {
+                        // Wait a bit and try again, or fallback
+                        setTimeout(() => {
+                            if (typeof window.QRious !== 'undefined') {
+                                createQR(text);
+                            } else {
+                                console.log('QRious not loaded, using fallback');
+                                generateFallbackQR(text);
+                            }
+                        }, 100);
                     }
                 } catch (error) {
-                    console.error('Error loading QR library:', error);
+                    console.error('Error in QR generation:', error);
                     generateFallbackQR(text);
                 }
             };
@@ -594,28 +595,8 @@ END:VCARD`;
             );
         };
 
-        // Wait for all libraries to load, then render the app
-        const renderApp = () => {
-            try {
-                ReactDOM.render(React.createElement(QRCodeGenerator), document.getElementById('root'));
-            } catch (error) {
-                console.error('Error rendering app:', error);
-                document.getElementById('root').innerHTML = `
-                    <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
-                        <h1>QR Code Generator</h1>
-                        <p>Loading the application...</p>
-                        <p>If this message persists, please refresh the page.</p>
-                    </div>
-                `;
-            }
-        };
-
-        // Render immediately if libraries are ready, otherwise wait
-        if (window.React && window.ReactDOM) {
-            renderApp();
-        } else {
-            window.addEventListener('load', renderApp);
-        }
+        // Render the app
+        ReactDOM.render(React.createElement(QRCodeGenerator), document.getElementById('root'));
     </script>
 </body>
 </html>
