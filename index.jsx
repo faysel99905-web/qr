@@ -147,7 +147,6 @@ const QRCodeGenerator = () => {
           if (typeof window.QRious !== 'undefined') {
             createQR(text);
           } else {
-            console.log('QRious not loaded, using fallback');
             generateFallbackQR(text);
           }
         }, 100);
@@ -495,16 +494,13 @@ END:VCARD`;
                 <h2 className="text-2xl font-semibold text-gray-800">{t('generatedQrCode')}</h2>
                 
                 <div className="bg-gray-50 rounded-2xl p-8 w-full max-w-sm">
-                  {qrData ? (
-                    <div className="text-center">
-                      <div ref={qrContainerRef} className="flex justify-center">
-                        {/* QR code will be dynamically inserted here */}
-                      </div>
-                      <p className="text-sm text-gray-600 mt-4">
-                        {t('scanQrCode')}
-                      </p>
-                    </div>
-                  ) : (
+                  <div className={qrData ? "text-center" : "hidden"}>
+                    <div ref={qrContainerRef} className="flex justify-center"></div>
+                    <p className="text-sm text-gray-600 mt-4">
+                      {t('scanQrCode')}
+                    </p>
+                  </div>
+                  {!qrData && (
                     <div className="text-center py-16">
                       <QrCode className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                       <p className="text-gray-500">

@@ -175,7 +175,6 @@
 
             // QR Code generation
             const generateQRCode = async (text) => {
-                console.log('generateQRCode called with text:', text);
                 if (!text.trim()) {
                     if (qrContainerRef.current) {
                         qrContainerRef.current.innerHTML = '';
@@ -184,20 +183,14 @@
                 }
 
                 try {
-                    // Check if QRious library is loaded
-                    console.log('window.QRious available:', typeof window.QRious !== 'undefined');
                     if (typeof window.QRious !== 'undefined') {
-                        console.log('Using QRious library');
                         createQR(text);
                     } else {
-                        console.log('QRious not available, waiting and trying fallback');
                         // Wait a bit and try again, or fallback
                         setTimeout(() => {
                             if (typeof window.QRious !== 'undefined') {
-                                console.log('QRious now available after timeout');
                                 createQR(text);
                             } else {
-                                console.log('QRious still not loaded, using fallback');
                                 generateFallbackQR(text);
                             }
                         }, 100);
@@ -209,9 +202,7 @@
             };
 
             const createQR = (text) => {
-                console.log('createQR called with text:', text);
                 if (!qrContainerRef.current) {
-                    console.log('qrContainerRef.current is null');
                     return;
                 }
                 
@@ -223,7 +214,6 @@
                     const canvas = document.createElement('canvas');
                     qrContainerRef.current.appendChild(canvas);
                     
-                    console.log('Creating QR with QRious...');
                     // Generate QR code
                     const qr = new window.QRious({
                         element: canvas,
@@ -239,7 +229,6 @@
                     canvas.style.maxWidth = '300px';
                     canvas.style.height = 'auto';
                     
-                    console.log('QR code created successfully');
                     
                 } catch (error) {
                     console.error('Error creating QR code:', error);
@@ -248,9 +237,7 @@
             };
 
             const generateFallbackQR = (text) => {
-                console.log('generateFallbackQR called with text:', text);
                 if (!qrContainerRef.current) {
-                    console.log('qrContainerRef.current is null in fallback');
                     return;
                 }
                 
@@ -266,17 +253,11 @@
                 img.style.maxWidth = '300px';
                 img.style.height = 'auto';
                 
-                console.log('Using Google Charts fallback for QR code');
                 
                 // Add error handling for the fallback image
                 img.onerror = () => {
-                    console.log('Google Charts failed, trying QR Server API');
                     // If Google Charts also fails, try QR Server API
                     img.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedData}&format=png&margin=10`;
-                };
-                
-                img.onload = () => {
-                    console.log('Fallback QR code loaded successfully');
                 };
                 
                 qrContainerRef.current.appendChild(img);
@@ -324,7 +305,6 @@ END:VCARD`;
                         data = '';
                 }
                 
-                console.log('useEffect triggered - activeTab:', activeTab, 'data:', data);
                 setQrData(data);
                 generateQRCode(data);
             }, [activeTab, urlInput, textInput, contactInfo]);
@@ -547,19 +527,9 @@ END:VCARD`;
 
                                     React.createElement('button', {
                                         onClick: resetForm,
-                                        className: "w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium mb-2"
+                                        className: "w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
                                     },
                                         t('clearAllFields')
-                                    ),
-                                    
-                                    React.createElement('button', {
-                                        onClick: () => {
-                                            console.log('Test QR generation with sample text');
-                                            generateQRCode('https://example.com');
-                                        },
-                                        className: "w-full px-6 py-3 bg-blue-100 text-blue-700 rounded-xl hover:bg-blue-200 transition-all duration-200 font-medium"
-                                    },
-                                        "Test QR Generation"
                                     )
                                 ),
 
@@ -570,12 +540,13 @@ END:VCARD`;
                                     ),
                                     
                                     React.createElement('div', { className: "bg-gray-50 rounded-2xl p-8 w-full max-w-sm" },
-                                        qrData ? React.createElement('div', { className: "text-center" },
+                                        React.createElement('div', { className: qrData ? "text-center" : "hidden" },
                                             React.createElement('div', { ref: qrContainerRef, className: "flex justify-center" }),
                                             React.createElement('p', { className: "text-sm text-gray-600 mt-4" },
                                                 t('scanQrCode')
                                             )
-                                        ) : React.createElement('div', { className: "text-center py-16" },
+                                        ),
+                                        !qrData && React.createElement('div', { className: "text-center py-16" },
                                             React.createElement(QrCode, { className: "w-16 h-16 text-gray-300 mx-auto mb-4" }),
                                             React.createElement('p', { className: "text-gray-500" },
                                                 t('fillFormPrompt')
@@ -629,9 +600,6 @@ END:VCARD`;
             );
         };
 
-        // Test QRious library availability
-        console.log('QRious library check:', typeof window.QRious);
-        
         // Render the app
         ReactDOM.render(React.createElement(QRCodeGenerator), document.getElementById('root'));
     </script>
